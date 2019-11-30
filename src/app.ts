@@ -1,13 +1,19 @@
 import "phaser";
 
+import { WelcomeScene } from "./welcomeScene";
 import { GameScene } from "./gameScene";
+import { ScoreScene } from "./scoreScene";
 
 const config: GameConfig = {
   title: "Starfall",
-  width: '100vw',
-  height: '100vh',
+  width: 800,
+  height: 600,
   parent: "game",
-  scene: [GameScene],
+  scene: [
+    WelcomeScene,
+    GameScene,
+    ScoreScene,
+  ],
   physics: {
     default: "arcade",
     arcade: {
