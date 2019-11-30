@@ -24,7 +24,7 @@ export class GameScene extends Phaser.Scene {
   }
   preload(): void {
     this.load.setBaseURL('./');
-    this.load.image("star", "assets/Crocodile.svg");
+    this.load.image("coin", "assets/Coin.svg");
     this.load.image("endWaterfall", "assets/End.svg");
     this.load.image("ground", "assets/Ground.svg");
     this.load.image("sky", "assets/Sky.svg");
@@ -74,6 +74,7 @@ export class GameScene extends Phaser.Scene {
     this.info = this.add.text(10, 70, '',
       { font: '24px Arial Bold', fill: '#495AB4' });
   }
+
   update(time: number): void {
     var diff: number = time - this.lastStarTime;
     if (diff > this.delta) {
@@ -81,11 +82,9 @@ export class GameScene extends Phaser.Scene {
       if (this.delta > 500) {
         this.delta -= 20;
       }
-      this.emitStar();
+      this.emitCoin();
     }
-    this.info.text =
-      this.starsCaught + " caught - " +
-      this.starsFallen + " fallen (max 3)";
+    this.info.text = `Amount ${this.starsCaught} $`;
   }
 
   private onClick(star: Phaser.Physics.Arcade.Image): () => void {
@@ -113,16 +112,25 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private emitStar(): void {
+  private emitCoin(): void {
     var star: Phaser.Physics.Arcade.Image;
-    var x = Phaser.Math.Between(25, 775);
-    var y = 26;
-    star = this.physics.add.image(x, y, "star");
+    var x = Phaser.Math.Between(150, 650);
+    var y = 100;
+    star = this.physics.add.image(x, y, "coin");
     star.setDisplaySize(50, 50);
     star.setVelocity(0, 200);
     star.setInteractive();
-    star.on('pointerdown', this.onClick(star), this);
-    this.physics.add.collider(star, this.endWaterfall,
-      this.onFall(star), null, this);
+    star.on(
+      'pointerdown',
+      this.onClick(star),
+      this,
+    );
+    this.physics.add.collider(
+      star,
+      this.endWaterfall,
+      this.onFall(star),
+      null,
+      this,
+    );
   }
 };
