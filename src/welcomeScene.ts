@@ -22,7 +22,6 @@ export class WelcomeScene extends Phaser.Scene {
   }
 
   create(): void {
-
     this.groundLeft = this.physics.add.staticGroup({
       key: 'ground',
       frameQuantity: 5
