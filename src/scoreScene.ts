@@ -2,7 +2,13 @@ import "phaser";
 
 export class ScoreScene extends Phaser.Scene {
   score: number;
+  emitted: number;
+  taken: number;
+  bankrupt: boolean;
   result: Phaser.GameObjects.Text;
+  points: Phaser.GameObjects.Text;
+  rateo: Phaser.GameObjects.Text;
+  quantity: Phaser.GameObjects.Text;
   hint: Phaser.GameObjects.Text;
   endWaterfall: Phaser.Physics.Arcade.StaticGroup;
   sky: Phaser.Physics.Arcade.StaticGroup;
@@ -15,7 +21,10 @@ export class ScoreScene extends Phaser.Scene {
     });
   }
   init(params: any): void {
-    this.score = params.starsCaught;
+    this.score = params.coinsCaught;
+    this.bankrupt = params.bankrupt;
+    this.emitted = params.emitted;
+    this.taken = params.taken;
   }
   create(): void {
     this.groundLeft = this.physics.add.staticGroup({
@@ -58,14 +67,28 @@ export class ScoreScene extends Phaser.Scene {
     );
     this.sky.refresh();
 
-    var resultText: string = 'Your score is ' + this.score + '!';
-    this.result = this.add.text(230, 250, resultText,
+
+    var resultText: string = this.bankrupt
+      ? 'Bankrupt! They got you...'
+      : 'Great score!';
+    const x = this.bankrupt ? 150 : 275;
+    this.result = this.add.text(x, 200, resultText,
       { font: '48px Arial Bold', fill: '#FBFBAC' });
+    this.points = this.add.text(360, 300, `${this.score} $`,
+      { font: '48px Arial Bold', fill: '#FBFBAC' });
+    
+    const rateo = Math.round((this.taken / this.emitted) * 100) / 100;
+    const rateoText = `${this.taken} / ${this.emitted} taken`;
+    this.quantity = this.add.text(200, 380, rateoText,
+      { font: '28px Arial Bold', fill: '#FBFBAC' });
+    this.rateo = this.add.text(500, 380, `${rateo} rateo`,
+      { font: '28px Arial Bold', fill: '#FBFBAC' });
+
     var hintText: string = "Click to restart";
-    this.hint = this.add.text(320, 350, hintText,
+    this.hint = this.add.text(320, 470, hintText,
       { font: '24px Arial Bold', fill: '#FBFBAC' });
     this.input.on('pointerdown', function (/*pointer*/) {
-      this.scene.start("WelcomeScene");
+      this.scene.start("GameScene");
     }, this);
   }
 };
