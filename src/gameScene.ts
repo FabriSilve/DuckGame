@@ -1,10 +1,12 @@
 import "phaser";
 
 export class GameScene extends Phaser.Scene {
-  delta: number;
-  lastStarTime: number;
-  starsCaught: number;
-  starsFallen: number;
+  deltaCoin: number;
+  deltaShark: number;
+  lastCoinTime: number;
+  lastSharkTime: number;
+  coinsCaught: number;
+  coinsFallen: number;
   endWaterfall: Phaser.Physics.Arcade.StaticGroup;
   sky: Phaser.Physics.Arcade.StaticGroup;
   groundLeft: Phaser.Physics.Arcade.StaticGroup;
@@ -20,10 +22,12 @@ export class GameScene extends Phaser.Scene {
     });
   }
   init(): void {
-    this.delta = 1000;
-    this.lastStarTime = 0;
-    this.starsCaught = 0;
-    this.starsFallen = 0;
+    this.deltaCoin = 1000;
+    this.deltaShark = 5150;
+    this.lastCoinTime = 0;
+    this.lastSharkTime = 0;
+    this.coinsCaught = 0;
+    this.coinsFallen = 0;
   }
   preload(): void {
     this.load.setBaseURL('./');
@@ -32,6 +36,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("ground", "assets/Ground.svg");
     this.load.image("sky", "assets/Sky.svg");
     this.load.image("duck", "assets/Duck.svg");
+    this.load.image("shark", "assets/Shark.svg");
   }
 
   create(): void {
@@ -81,20 +86,29 @@ export class GameScene extends Phaser.Scene {
     this.keys = this.input.keyboard.createCursorKeys();
 
     this.duck = this.physics.add.sprite(400, 450, 'duck');
-    this.duck.setBounce(0.2);
+    // this.duck.setBounce(0.2);
     this.duck.setCollideWorldBounds(true);
+    this.physics.add.collider(this.duck, this.endWaterfall);
   }
 
   update(time: number): void {
-    var diff: number = time - this.lastStarTime;
-    if (diff > this.delta) {
-      this.lastStarTime = time;
-      if (this.delta > 500) {
-        this.delta -= 20;
+    var diffCoin: number = time - this.lastCoinTime;
+    if (diffCoin > this.deltaCoin) {
+      this.lastCoinTime = time;
+      if (this.deltaCoin > 500) {
+        this.deltaCoin -= 50;
       }
       this.emitCoin();
     }
-    this.info.text = `Amount ${this.starsCaught} $`;
+    var diffShark: number = time - this.lastSharkTime;
+    if (diffShark > this.deltaShark) {
+      this.lastSharkTime = time;
+      if (this.deltaShark > 500) {
+        this.deltaShark -= 50;
+      }
+      this.emitShark();
+    }
+    this.info.text = `Amount ${this.coinsCaught} $`;
 
     if (this.keys.left.isDown) {
       if (this.duck.x > 150) this.duck.x -= 5;
@@ -104,28 +118,55 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private onClick(star: Phaser.Physics.Arcade.Image): () => void {
+  private coinTaken(star: Phaser.Physics.Arcade.Image): () => void {
     return function () {
       star.setTint(0x00ff00);
       star.setVelocity(0, 0);
-      this.starsCaught += 1;
+      this.coinsCaught += 1;
       this.time.delayedCall(100, function (star) {
         star.destroy();
       }, [star], this);
     }
   }
 
-  private onFall(star: Phaser.Physics.Arcade.Image): () => void {
+  private sharkTaken(shark: Phaser.Physics.Arcade.Image): () => void {
     return function () {
-      star.setTint(0xff0000);
-      this.starsFallen += 1;
-      this.time.delayedCall(100, function (star) {
-        star.destroy();
-        if (this.starsFallen > 2) {
-          this.scene.start("ScoreScene",
-            { starsCaught: this.starsCaught });
+      // this.duck.setTint(0x00ff00);
+      shark.setVelocity(0, 0);
+      this.coinsCaught = 0;
+      this.time.delayedCall(100, function (shark) {
+        shark.destroy();
+        this.scene.start(
+          "ScoreScene",
+          { starsCaught: this.coinsCaught },
+        );
+      }, [shark], this);
+    }
+  }
+
+  private onFall(coin: Phaser.Physics.Arcade.Image): () => void {
+    return function () {
+      coin.setTint(0xff0000);
+      this.coinsFallen += 1;
+      this.time.delayedCall(100, function (coin) {
+        coin.destroy();
+        if (this.coinsFallen > 3) {
+          this.scene.start(
+            "ScoreScene", // "BankruptScene",
+            { starsCaught: this.coinsCaught },
+          );
         }
-      }, [star], this);
+      }, [coin], this);
+    }
+  }
+
+  private onFallShark(shark: Phaser.Physics.Arcade.Image): () => void {
+    return function () {
+      // star.setTint(0xff0000);
+      // this.coinsFallen += 1;
+      this.time.delayedCall(100, function (shark) {
+        shark.destroy();
+      }, [shark], this);
     }
   }
 
@@ -137,15 +178,41 @@ export class GameScene extends Phaser.Scene {
     coin.setDisplaySize(50, 50);
     coin.setVelocity(0, 200);
     coin.setInteractive();
-    coin.on(
-      'pointerdown',
-      this.onClick(coin),
+    this.physics.add.collider(
+      coin,
+      this.duck,
+      this.coinTaken(coin),
+      null,
       this,
     );
     this.physics.add.collider(
       coin,
       this.endWaterfall,
       this.onFall(coin),
+      null,
+      this,
+    );
+  }
+
+  private emitShark(): void {
+    var shark: Phaser.Physics.Arcade.Image;
+    var x = Phaser.Math.Between(150, 650);
+    var y = 100;
+    shark = this.physics.add.image(x, y, "shark");
+    shark.setDisplaySize(50, 50);
+    shark.setVelocity(0, 200);
+    shark.setInteractive();
+    this.physics.add.collider(
+      shark,
+      this.duck,
+      this.sharkTaken(shark),
+      null,
+      this,
+    );
+    this.physics.add.collider(
+      shark,
+      this.endWaterfall,
+      this.onFallShark(shark),
       null,
       this,
     );
