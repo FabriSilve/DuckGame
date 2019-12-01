@@ -102,7 +102,6 @@ export class GameScene extends Phaser.Scene {
 
     this.duck.setCollideWorldBounds(true);
     this.physics.add.collider(this.duck, this.endWaterfall);
-
   }
 
   update(time: number): void {

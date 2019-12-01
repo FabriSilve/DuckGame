@@ -8,6 +8,8 @@ export class WelcomeScene extends Phaser.Scene {
   groundLeft: Phaser.Physics.Arcade.StaticGroup;
   groundRight: Phaser.Physics.Arcade.StaticGroup;
 
+  music;
+
   constructor() {
     super({
       key: "WelcomeScene"
@@ -19,6 +21,8 @@ export class WelcomeScene extends Phaser.Scene {
     this.load.image("endWaterfall", "assets/End.svg");
     this.load.image("ground", "assets/Ground.svg");
     this.load.image("sky", "assets/Sky.svg");
+
+    this.load.audio("music", "assets/music.mp3");
   }
 
   create(): void {
@@ -71,5 +75,19 @@ export class WelcomeScene extends Phaser.Scene {
     this.input.on('pointerdown', function (/*pointer*/) {
       this.scene.start("GameScene");
     }, this);
+
+    this.music = this.sound.add(
+      'music',
+      {
+        mute: false,
+        volume: 1,
+        rate: 1,
+        detune: 0,
+        seek: 0,
+        loop: true,
+        delay: 0
+      }
+    );
+    this.music.play();
   }
 };
