@@ -10,6 +10,9 @@ export class GameScene extends Phaser.Scene {
   groundLeft: Phaser.Physics.Arcade.StaticGroup;
   groundRight: Phaser.Physics.Arcade.StaticGroup;
   info: Phaser.GameObjects.Text;
+  keys: Phaser.Types.Input.Keyboard.CursorKeys;
+
+  duck;
 
   constructor() {
     super({
@@ -28,6 +31,7 @@ export class GameScene extends Phaser.Scene {
     this.load.image("endWaterfall", "assets/End.svg");
     this.load.image("ground", "assets/Ground.svg");
     this.load.image("sky", "assets/Sky.svg");
+    this.load.image("duck", "assets/Duck.svg");
   }
 
   create(): void {
@@ -73,6 +77,12 @@ export class GameScene extends Phaser.Scene {
   
     this.info = this.add.text(10, 70, '',
       { font: '24px Arial Bold', fill: '#495AB4' });
+
+    this.keys = this.input.keyboard.createCursorKeys();
+
+    this.duck = this.physics.add.sprite(400, 450, 'duck');
+    this.duck.setBounce(0.2);
+    this.duck.setCollideWorldBounds(true);
   }
 
   update(time: number): void {
@@ -85,6 +95,13 @@ export class GameScene extends Phaser.Scene {
       this.emitCoin();
     }
     this.info.text = `Amount ${this.starsCaught} $`;
+
+    if (this.keys.left.isDown) {
+      if (this.duck.x > 150) this.duck.x -= 5;
+    }
+    if (this.keys.right.isDown) {
+      if (this.duck.x < 650) this.duck.x += 5;
+    }
   }
 
   private onClick(star: Phaser.Physics.Arcade.Image): () => void {
@@ -113,22 +130,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   private emitCoin(): void {
-    var star: Phaser.Physics.Arcade.Image;
+    var coin: Phaser.Physics.Arcade.Image;
     var x = Phaser.Math.Between(150, 650);
     var y = 100;
-    star = this.physics.add.image(x, y, "coin");
-    star.setDisplaySize(50, 50);
-    star.setVelocity(0, 200);
-    star.setInteractive();
-    star.on(
+    coin = this.physics.add.image(x, y, "coin");
+    coin.setDisplaySize(50, 50);
+    coin.setVelocity(0, 200);
+    coin.setInteractive();
+    coin.on(
       'pointerdown',
-      this.onClick(star),
+      this.onClick(coin),
       this,
     );
     this.physics.add.collider(
-      star,
+      coin,
       this.endWaterfall,
-      this.onFall(star),
+      this.onFall(coin),
       null,
       this,
     );
