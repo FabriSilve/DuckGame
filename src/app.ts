@@ -20,7 +20,7 @@ const config: GameConfig = {
       debug: false
     }
   },
-  backgroundColor: "#18216D"
+  backgroundColor: "#6FBAFF"
 };
 
 export class StarfallGame extends Phaser.Game {
